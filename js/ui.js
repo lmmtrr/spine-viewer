@@ -37,8 +37,8 @@ function createAttachmentUI() {
     return sa < sb ? -1 : sa > sb ? 1 : 0;
   });
   const f = a.filter((v) => v[0]);
-  const attachments = document.getElementById("attachments");
-  attachments.style.display = "block";
+  const attachment = document.getElementById("attachment");
+  attachment.style.display = "block";
   for (let i = 0; i < f.length; i++) {
     const div = document.createElement("div");
     div.className = "item";
@@ -51,7 +51,7 @@ function createAttachmentUI() {
     input.dataset.oldIndex = String(f[i][1]);
     label.appendChild(input);
     div.appendChild(label);
-    attachments.appendChild(div);
+    attachment.appendChild(div);
   }
 }
 
@@ -60,8 +60,8 @@ function createSkinUI() {
   if (skins.length === 1)
     document.getElementById("customSelector").disabled = true;
   else {
-    const skins = document.getElementById("skins");
-    skins.style.display = "none";
+    const skin = document.getElementById("skin");
+    skin.style.display = "none";
     for (let i = 1; i < skins.length; i++) {
       const div = document.createElement("div");
       div.className = "item";
@@ -73,7 +73,7 @@ function createSkinUI() {
       if (i === 0) input.checked = "checked";
       label.appendChild(input);
       div.appendChild(label);
-      skins.appendChild(div);
+      skin.appendChild(div);
     }
   }
 }
@@ -81,19 +81,19 @@ function createSkinUI() {
 export function resetUI() {
   resetValues();
   document.getElementById("container").scrollTop = 0;
-  document.getElementById("attachments").innerHTML = "";
-  document.getElementById("skins").innerHTML = "";
+  document.getElementById("attachment").innerHTML = "";
+  document.getElementById("skin").innerHTML = "";
   createAttachmentUI();
   createSkinUI();
 }
 
 export function switchUI() {
-  const attachments = document.getElementById("attachments");
-  const skins = document.getElementById("skins");
+  const attachment = document.getElementById("attachment");
+  const skin = document.getElementById("skin");
   switch (custom) {
     case "attachments":
-      attachments.style.display = "block";
-      skins.style.display = "none";
+      attachment.style.display = "block";
+      skin.style.display = "none";
       const checkboxes = document
         .getElementById("attachment")
         .querySelectorAll('input[type="checkbox"]');
@@ -102,8 +102,8 @@ export function switchUI() {
       });
       break;
     case "skins":
-      attachments.style.display = "none";
-      skins.style.display = "block";
+      attachment.style.display = "none";
+      skin.style.display = "block";
       break;
   }
 }

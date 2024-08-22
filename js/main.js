@@ -30,6 +30,8 @@ let assetManager;
 let mvp;
 let lastFrameTime;
 let requestId;
+let folder2;
+let fileName2;
 const isSpineVersionAbove3 = Number(spineVersion.charAt(0)) > 3;
 export let animationState;
 export let skeletons = {};
@@ -46,6 +48,11 @@ script.onload = () => {
 document.body.appendChild(script);
 
 export function init() {
+  [folder2, fileName2] = charaIds[charaIndex].split(/\\(?!.*\\)/);
+  if (!fileName2) {
+    fileName2 = folder2;
+    folder2 = "";
+  }
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   if (isSpineVersionAbove3) {
@@ -53,30 +60,36 @@ export function init() {
     shader = spine.Shader.newTwoColoredTextured(ctx);
     batcher = new spine.PolygonBatcher(ctx);
     skeletonRenderer = new spine.SkeletonRenderer(ctx);
-    assetManager = new spine.AssetManager(ctx.gl, `assets/${folder}/`);
+    assetManager = new spine.AssetManager(
+      ctx.gl,
+      `assets/${folder}/${folder2}/`
+    );
   } else {
     ctx = new spine.webgl.ManagedWebGLRenderingContext(canvas);
     shader = spine.webgl.Shader.newTwoColoredTextured(ctx);
     batcher = new spine.webgl.PolygonBatcher(ctx);
     skeletonRenderer = new spine.webgl.SkeletonRenderer(ctx);
-    assetManager = new spine.webgl.AssetManager(ctx.gl, `assets/${folder}/`);
+    assetManager = new spine.webgl.AssetManager(
+      ctx.gl,
+      `assets/${folder}/${folder2}/`
+    );
   }
   loadFiles();
 }
 
 export function loadFiles() {
   if (isBinary) {
-    assetManager.loadBinary(charaIds[charaIndex] + ".skel");
+    assetManager.loadBinary(fileName2 + ".skel");
   } else {
-    assetManager.loadText(charaIds[charaIndex] + ".json");
+    assetManager.loadText(fileName2 + ".json");
   }
-  assetManager.loadTextureAtlas(charaIds[charaIndex] + ".atlas");
+  assetManager.loadTextureAtlas(fileName2 + ".atlas");
   requestAnimationFrame(load);
 }
 
 function load() {
   if (assetManager.isLoadingComplete()) {
-    skeletons["0"] = loadSkeleton(charaIds[charaIndex], premultipliedAlpha);
+    skeletons["0"] = loadSkeleton(premultipliedAlpha);
     lastFrameTime = Date.now() / 1000;
     requestAnimationFrame(render);
   } else requestAnimationFrame(load);
@@ -91,13 +104,13 @@ function calculateSetupPoseBounds(skeleton) {
   return { offset: offset, size: size };
 }
 
-function loadSkeleton(name, premultipliedAlpha) {
-  const atlas = assetManager.get(charaIds[charaIndex] + ".atlas");
+function loadSkeleton(premultipliedAlpha) {
+  const atlas = assetManager.get(fileName2 + ".atlas");
   const atlasLoader = new spine.AtlasAttachmentLoader(atlas);
   const skeletonLoader = isBinary
     ? new spine.SkeletonBinary(atlasLoader)
     : new spine.SkeletonJson(atlasLoader);
-  const fileName = isBinary ? name + ".skel" : name + ".json";
+  const fileName = isBinary ? fileName2 + ".skel" : fileName2 + ".json";
   const skeletonData = skeletonLoader.readSkeletonData(
     assetManager.get(fileName)
   );
@@ -107,8 +120,6 @@ function loadSkeleton(name, premultipliedAlpha) {
   animationState = new spine.AnimationState(animationStateData);
   const animations = skeleton.data.animations;
   animationState.setAnimation(0, animations[0].name, true);
-  animationSelector.value = animations[0].name;
-  skeleton.setSkinByName("default");
   createAnimationSelector(animations);
   return {
     skeleton: skeleton,

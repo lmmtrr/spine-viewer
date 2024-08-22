@@ -52,7 +52,6 @@ export function resetValues() {
   scale = scaleInit;
   moveX = 0;
   moveY = 0;
-  rotate = 0;
   isFirstRender = true;
   custom = "attachments";
   customSelector.value = "attachments";
@@ -83,12 +82,12 @@ function handleKeyboardInput(e) {
     case "z":
     case "x":
       e.preventDefault();
-      updateCharacterIndex(e.key === "z" ? -1 : 1);
+      changeCharacter(e.key === "z" ? -1 : 1);
       break;
   }
 }
 
-function updateCharacterIndex(delta) {
+function changeCharacter(delta) {
   charaIndex = (charaIndex + delta + charaIds.length) % charaIds.length;
   characterSelector.selectedIndex = charaIndex;
   dispose();
@@ -175,7 +174,7 @@ function handleFolderChange(e) {
 function handleCharacterChange(e) {
   charaIndex = e.target.selectedIndex;
   dispose();
-  loadFiles();
+  init();
 }
 
 function restoreAttachments() {
