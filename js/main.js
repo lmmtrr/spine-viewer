@@ -137,13 +137,12 @@ export function dispose() {
   resetValues();
 }
 
-function render() {
+export function render() {
   const gl = ctx.gl;
   const now = Date.now() / 1000;
   const delta = now - lastFrameTime;
   lastFrameTime = now;
   resize();
-  gl.clearColor(0.3, 0.3, 0.3, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
   const skeleton = skeletons["0"].skeleton;
   const state = skeletons["0"].state;

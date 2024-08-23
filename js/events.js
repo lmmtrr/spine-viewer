@@ -1,3 +1,4 @@
+import { startRecording } from "./export.js";
 import { animationState, dispose, init, loadFiles, skeletons } from "./main.js";
 import {
   charaIds,
@@ -25,6 +26,7 @@ let startX = 0;
 let startY = 0;
 let mouseDown = false;
 let isMove = false;
+let isRecording = false;
 export let isFirstRender = true;
 export let premultipliedAlpha = false;
 let swap = [];
@@ -34,14 +36,18 @@ const canvas = document.getElementById("canvas");
 const toggleButton = document.getElementById("toggleButton");
 const pmaCheckbox = document.getElementById("pmaCheckbox");
 const folderSelector = document.getElementById("folderSelector");
-const characterSelector = document.getElementById("characterSelector");
-const animationSelector = document.getElementById("animationSelector");
+export const characterSelector = document.getElementById("characterSelector");
+export const animationSelector = document.getElementById("animationSelector");
 const customSelector = document.getElementById("customSelector");
 const filterBox = document.getElementById("filterBox");
 const container = document.getElementById("container");
 
 export function resetSwap(length) {
   swap = Array(length).fill(null);
+}
+
+export function setRecordingFlag(flag) {
+  isRecording = flag;
 }
 
 export function setFirstRenderFlag(flag) {
@@ -78,11 +84,14 @@ export function setupEventListeners() {
 }
 
 function handleKeyboardInput(e) {
+  if (!e.ctrlKey) return;
   switch (e.key) {
-    case "z":
-    case "x":
+    case "e":
       e.preventDefault();
-      changeCharacter(e.key === "z" ? -1 : 1);
+      if (isRecording) return;
+      isRecording = true;
+      animationState.setAnimation(0, animationSelector.value, true);
+      startRecording();
       break;
   }
 }

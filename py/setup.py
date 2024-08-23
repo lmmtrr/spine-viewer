@@ -43,7 +43,7 @@ for folder in folders.keys():
     elif os.path.exists(p2):
         isBinaries[folder] = False
 
-with open("../js/setup.js", "w") as f:
+with open("../js/setup.js", "w", encoding="utf-8") as f:
     f.write(f'export const spineVersion = "{spine_version}";\n')
     f.write(f"export let isBinary = {str(isBinaries[first_folder]) .lower()};\n")
     f.write(f"export const isBinaries = {json.dumps(isBinaries)};\n")

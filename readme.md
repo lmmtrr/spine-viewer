@@ -25,6 +25,12 @@ python -m http.server
 
 #### 4. Visit http://localhost:8000/
 
+## Keyboard shortcuts
+
+| Keyboard shortcut            | Description |
+| ---------------------------- | ----------- |
+| <kbd>Ctrl</kbd>+<kbd>E</kbd> | Export      |
+
 ## NOTE:
 
 If images are displayed in a fragmented manner, execute the following command. Note that the target images will be overwritten, so make a backup if necessary.
