@@ -96,13 +96,6 @@ function handleKeyboardInput(e) {
   }
 }
 
-function changeCharacter(delta) {
-  charaIndex = (charaIndex + delta + charaIds.length) % charaIds.length;
-  characterSelector.selectedIndex = charaIndex;
-  dispose();
-  loadFiles();
-}
-
 function handleResize() {
   const { innerWidth: w, innerHeight: h } = window;
   canvas.width = w;

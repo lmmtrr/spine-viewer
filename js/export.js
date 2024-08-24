@@ -3,7 +3,7 @@ import {
   characterSelector,
   setRecordingFlag,
 } from "./events.js";
-import { animationState, render } from "./main.js";
+import { animationState } from "./main.js";
 
 // ref. https://github.com/Nikke-db/nikke-db-vue/blob/main/src/components/common/Spine/Loader.vue#L297
 const RECORDING_MIME_TYPE = "video/webm;codecs=vp8";
@@ -13,6 +13,7 @@ const RECORDING_TIME_SLICE = 10;
 const ANIMATION_TIME_EPSILON = 0.02;
 
 export function startRecording() {
+  const canvas = document.getElementById("canvas");
   const chunks = [];
   const stream = canvas.captureStream(RECORDING_FRAME_RATE);
   const rec = new MediaRecorder(stream, {
@@ -26,7 +27,6 @@ export function startRecording() {
   };
 
   rec.onstart = () => {
-    render();
     requestAnimationFrame(checkCondition);
   };
 

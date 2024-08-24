@@ -137,7 +137,7 @@ export function dispose() {
   resetValues();
 }
 
-export function render() {
+function render() {
   const gl = ctx.gl;
   const now = Date.now() / 1000;
   const delta = now - lastFrameTime;
