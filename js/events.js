@@ -1,15 +1,15 @@
 import { startRecording } from "./export.js";
 import { animationState, dispose, init, loadFiles, skeletons } from "./main.js";
 import {
-  charaIds,
+  sceneIds,
   folder,
   folders,
   isBinaries,
   setBinaryflag,
-  setCharaIds,
+  setSceneIds,
   setFolder,
 } from "./setup.js";
-import { createCharacterSelector, switchUI, resetUI } from "./ui.js";
+import { createSceneSelector, switchUI } from "./ui.js";
 
 const scaleInit = 1;
 const scaleMax = 8;
@@ -21,7 +21,7 @@ export let scale = scaleInit;
 export let moveX = 0;
 export let moveY = 0;
 export let rotate = 0;
-export let charaIndex = 0;
+export let sceneIndex = 0;
 let startX = 0;
 let startY = 0;
 let mouseDown = false;
@@ -29,22 +29,19 @@ let isMove = false;
 let isRecording = false;
 export let isFirstRender = true;
 export let premultipliedAlpha = false;
-let swap = [];
-export let custom = "attachments";
+let skinFlags = [];
+let attachmentFlags = [];
+export let setting = "attachments";
 
 const canvas = document.getElementById("canvas");
 const toggleButton = document.getElementById("toggleButton");
 const pmaCheckbox = document.getElementById("pmaCheckbox");
 const folderSelector = document.getElementById("folderSelector");
-export const characterSelector = document.getElementById("characterSelector");
+export const sceneSelector = document.getElementById("sceneSelector");
 export const animationSelector = document.getElementById("animationSelector");
-const customSelector = document.getElementById("customSelector");
+const settingSelector = document.getElementById("settingSelector");
 const filterBox = document.getElementById("filterBox");
 const container = document.getElementById("container");
-
-export function resetSwap(length) {
-  swap = Array(length).fill(null);
-}
 
 export function setRecordingFlag(flag) {
   isRecording = flag;
@@ -58,10 +55,11 @@ export function resetValues() {
   scale = scaleInit;
   moveX = 0;
   moveY = 0;
+  rotate = 0;
   isFirstRender = true;
-  custom = "attachments";
-  customSelector.value = "attachments";
-  customSelector.disabled = false;
+  setting = "attachments";
+  settingSelector.value = "attachments";
+  settingSelector.disabled = false;
   filterBox.value = "";
 }
 
@@ -76,22 +74,49 @@ export function setupEventListeners() {
   toggleButton.addEventListener("click", toggleSidebar);
   pmaCheckbox.addEventListener("change", handlePMACheckboxChange);
   folderSelector.addEventListener("change", handleFolderChange);
-  characterSelector.addEventListener("change", handleCharacterChange);
+  sceneSelector.addEventListener("change", handleSceneChange);
   animationSelector.addEventListener("change", handleAnimationChange);
-  customSelector.addEventListener("change", handleCustomChange);
+  settingSelector.addEventListener("change", handlesettingChange);
   filterBox.addEventListener("input", handleFilterInput);
   container.addEventListener("input", handleCheckboxChange);
+}
+
+function nextScene() {
+  sceneSelector.focus();
+  sceneIndex = (sceneSelector.selectedIndex + 1) % sceneSelector.options.length;
+  sceneSelector.selectedIndex = sceneIndex;
+  handleSceneChange_();
+}
+
+function nextAnimation() {
+  animationSelector.focus();
+  let animationIndex =
+    (animationSelector.selectedIndex + 1) % animationSelector.options.length;
+  animationSelector.selectedIndex = animationIndex;
+  handleAnimationChange_(animationIndex);
+}
+
+function export_() {
+  if (isRecording) return;
+  isRecording = true;
+  animationState.setAnimation(0, animationSelector.value, true);
+  startRecording();
 }
 
 function handleKeyboardInput(e) {
   if (!e.ctrlKey) return;
   switch (e.key) {
+    case "s":
+      e.preventDefault();
+      nextScene();
+      break;
+    case "a":
+      e.preventDefault();
+      nextAnimation();
+      break;
     case "e":
       e.preventDefault();
-      if (isRecording) return;
-      isRecording = true;
-      animationState.setAnimation(0, animationSelector.value, true);
-      startRecording();
+      export_();
       break;
   }
 }
@@ -165,41 +190,71 @@ function handlePMACheckboxChange() {
 
 function handleFolderChange(e) {
   setFolder(e.target.value);
-  setCharaIds(folders[folder]);
+  setSceneIds(folders[folder]);
   setBinaryflag(isBinaries[folder]);
-  charaIndex = 0;
+  sceneIndex = 0;
   dispose();
-  createCharacterSelector(charaIds);
+  createSceneSelector(sceneIds);
   init();
 }
 
-function handleCharacterChange(e) {
-  charaIndex = e.target.selectedIndex;
+function handleSceneChange_() {
   dispose();
   init();
+}
+
+function handleSceneChange(e) {
+  sceneIndex = e.target.selectedIndex;
+  handleSceneChange_();
+}
+
+function handleAnimationChange_(index) {
+  const checkboxes = container.querySelectorAll("#skin input[type='checkbox']");
+  skinFlags = Array.from(checkboxes).map((checkbox) => checkbox.checked);
+  const animationName = skeletons["0"].skeleton.data.animations[index].name;
+  animationState.setAnimation(0, animationName, true);
+  restoreAttachments();
+  setting = "attachments";
+  settingSelector.value = "attachments";
+  settingSelector.disabled = false;
+  isFirstRender = true;
+}
+
+function handleAnimationChange(e) {
+  handleAnimationChange_(e.target.selectedIndex);
+}
+
+export function resetAttachmentFlags(length) {
+  attachmentFlags = Array(length).fill(null);
+}
+
+export function resetSkinFlags() {
+  skinFlags = [];
 }
 
 function restoreAttachments() {
-  swap.forEach((attachment, i) => {
+  attachmentFlags.forEach((attachment, index) => {
     if (attachment) {
-      [skeletons["0"].skeleton.slots[i].attachment, swap[i]] = [
-        swap[i],
-        skeletons["0"].skeleton.slots[i].attachment,
+      [
+        skeletons["0"].skeleton.slots[index].attachment,
+        attachmentFlags[index],
+      ] = [
+        attachmentFlags[index],
+        skeletons["0"].skeleton.slots[index].attachment,
       ];
     }
   });
 }
 
-function handleAnimationChange(e) {
-  const animationName =
-    skeletons["0"].skeleton.data.animations[e.target.selectedIndex].name;
-  animationState.setAnimation(0, animationName, true);
-  restoreAttachments();
-  resetUI();
+export function restoreSkins() {
+  const checkboxes = document.querySelectorAll('#skin input[type="checkbox"]');
+  checkboxes.forEach((checkbox, index) => {
+    checkbox.checked = skinFlags[index];
+  });
 }
 
-function handleCustomChange(e) {
-  custom = e.target.value;
+function handlesettingChange(e) {
+  setting = e.target.value;
   restoreAttachments();
   switchUI();
 }
@@ -218,8 +273,8 @@ function handleFilterInput(e) {
 
 function handleAttachmentCheckboxChange(e) {
   const i = Number(e.target.getAttribute("data-old-index"));
-  [skeletons["0"].skeleton.slots[i].attachment, swap[i]] = [
-    swap[i],
+  [skeletons["0"].skeleton.slots[i].attachment, attachmentFlags[i]] = [
+    attachmentFlags[i],
     skeletons["0"].skeleton.slots[i].attachment,
   ];
 }
@@ -242,7 +297,7 @@ function handleSkinCheckboxChange() {
 
 function handleCheckboxChange(e) {
   if (e.target.type !== "checkbox") return;
-  switch (custom) {
+  switch (setting) {
     case "attachments":
       handleAttachmentCheckboxChange(e);
       break;

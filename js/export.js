@@ -1,6 +1,6 @@
 import {
   animationSelector,
-  characterSelector,
+  sceneSelector,
   setRecordingFlag,
 } from "./events.js";
 import { animationState } from "./main.js";
@@ -34,7 +34,7 @@ export function startRecording() {
     const blob = new Blob(chunks, { type: "video/webm" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.download = `${characterSelector.value}_${animationSelector.value}.webm`;
+    link.download = `${sceneSelector.value}_${animationSelector.value}.webm`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);

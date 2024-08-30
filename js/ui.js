@@ -1,4 +1,4 @@
-import { custom, resetValues, resetSwap } from "./events.js";
+import { resetAttachmentFlags, resetSkinFlags, setting } from "./events.js";
 import { skeletons } from "./main.js";
 
 export function createFolderSelector(folders) {
@@ -11,12 +11,12 @@ export function createFolderSelector(folders) {
   });
 }
 
-export function createCharacterSelector(charaIds) {
+export function createSceneSelector(sceneIds) {
   let s = "";
-  for (let v of charaIds) {
+  for (let v of sceneIds) {
     s += `<option>${v}</option>`;
   }
-  document.getElementById("characterSelector").innerHTML = s;
+  document.getElementById("sceneSelector").innerHTML = s;
 }
 
 export function createAnimationSelector(animations) {
@@ -29,7 +29,7 @@ export function createAnimationSelector(animations) {
 
 function createAttachmentUI() {
   const slots = skeletons["0"].skeleton.slots;
-  resetSwap(slots.length);
+  resetAttachmentFlags(slots.length);
   const a = slots.map((value, index) => [value.attachment?.name, index]);
   a.sort(function (a, b) {
     const sa = String(a).replace(/(\d+)/g, (m) => m.padStart(3, "0"));
@@ -57,8 +57,9 @@ function createAttachmentUI() {
 
 function createSkinUI() {
   const skins = skeletons["0"].skeleton.data.skins;
+  resetSkinFlags();
   if (skins.length === 1)
-    document.getElementById("customSelector").disabled = true;
+    document.getElementById("settingSelector").disabled = true;
   else {
     const skin = document.getElementById("skin");
     skin.style.display = "none";
@@ -79,7 +80,6 @@ function createSkinUI() {
 }
 
 export function resetUI() {
-  resetValues();
   document.getElementById("container").scrollTop = 0;
   document.getElementById("attachment").innerHTML = "";
   document.getElementById("skin").innerHTML = "";
@@ -90,7 +90,7 @@ export function resetUI() {
 export function switchUI() {
   const attachment = document.getElementById("attachment");
   const skin = document.getElementById("skin");
-  switch (custom) {
+  switch (setting) {
     case "attachments":
       attachment.style.display = "block";
       skin.style.display = "none";

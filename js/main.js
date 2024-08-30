@@ -1,11 +1,11 @@
 import {
   isFirstRender,
+  restoreSkins,
   setFirstRenderFlag,
   setupEventListeners,
 } from "./events.js";
-import { charaIds, folder, folders, isBinary, spineVersion } from "./setup.js";
+import { sceneIds, folder, folders, isBinary, spineVersion } from "./setup.js";
 import {
-  charaIndex,
   moveX,
   moveY,
   moveStep,
@@ -13,10 +13,11 @@ import {
   resetValues,
   rotate,
   scale,
+  sceneIndex,
 } from "./events.js";
 import {
   createAnimationSelector,
-  createCharacterSelector,
+  createSceneSelector,
   createFolderSelector,
   resetUI,
 } from "./ui.js";
@@ -42,13 +43,28 @@ script.onload = () => {
   mvp = isSpineVersionAbove3 ? new spine.Matrix4() : new spine.webgl.Matrix4();
   setupEventListeners();
   createFolderSelector(folders);
-  createCharacterSelector(charaIds);
+  createSceneSelector(sceneIds);
   init();
 };
 document.body.appendChild(script);
 
+function setAnimationAndSkin(skeleton) {
+  const animationSelector = document.getElementById("animationSelector");
+  switch (folder) {
+    case "characters":
+      animationState.setAnimation(0, "animation1", true);
+      animationSelector.value = "animation1";
+      skeleton.setSkinByName("face1");
+      const checkboxes = container.querySelectorAll(
+        "#skin input[type='checkbox']"
+      );
+      checkboxes[0].checked = true;
+      break;
+  }
+}
+
 export function init() {
-  [folder2, fileName2] = charaIds[charaIndex].split(/\\(?!.*\\)/);
+  [folder2, fileName2] = sceneIds[sceneIndex].split(/\\(?!.*\\)/);
   if (!fileName2) {
     fileName2 = folder2;
     folder2 = "";
@@ -121,6 +137,7 @@ function loadSkeleton(premultipliedAlpha) {
   const animations = skeleton.data.animations;
   animationState.setAnimation(0, animations[0].name, true);
   createAnimationSelector(animations);
+  // setAnimationAndSkin(skeleton);
   return {
     skeleton: skeleton,
     state: animationState,
@@ -132,8 +149,8 @@ function loadSkeleton(premultipliedAlpha) {
 export function dispose() {
   if (requestId) window.cancelAnimationFrame(requestId);
   requestId = undefined;
-  skeletons = {};
   if (assetManager) assetManager.dispose();
+  skeletons = {};
   resetValues();
 }
 
@@ -166,6 +183,7 @@ function render() {
   shader.unbind();
   if (isFirstRender) {
     resetUI();
+    restoreSkins();
     setFirstRenderFlag(false);
   }
   requestId = requestAnimationFrame(render);
