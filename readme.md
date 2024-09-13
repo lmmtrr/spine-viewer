@@ -42,7 +42,8 @@ python resize.py
 ```
 
 If a display bug like the one at the link occurs, please place the affected image into the **convert** folder and execute the following. Note that the target images will be overwritten, so it is recommended to back them up.
-[Premultiplied Alpha Guide - Spine Forum](https://es.esotericsoftware.com/forum/d/3132-premultiplied-alpha-guide/2)
+
+[Premultiplied Alpha Guide - Spine Forum](https://es.esotericsoftware.com/forum/d/3132-premultiplied-alpha-guide)
 
 ```sh
 python pma2sta.py
