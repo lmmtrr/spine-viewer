@@ -1,14 +1,6 @@
 import { startRecording } from "./export.js";
 import { animationState, dispose, init, loadFiles, skeletons } from "./main.js";
-import {
-  sceneIds,
-  folder,
-  folders,
-  isBinaries,
-  setBinaryflag,
-  setSceneIds,
-  setFolder,
-} from "./setup.js";
+import { sceneIds, dir, dirFiles, setSceneIds, setDir } from "./setup.js";
 import { createSceneSelector, switchUI } from "./ui.js";
 
 const scaleInit = 1;
@@ -33,10 +25,15 @@ let skinFlags = [];
 let attachmentFlags = [];
 export let setting = "attachments";
 
+const rootStyles = getComputedStyle(document.documentElement);
+const sidebarWidth = Number(
+  rootStyles.getPropertyValue("--sidebar-width").replace("px", "")
+);
+
 const canvas = document.getElementById("canvas");
 const toggleButton = document.getElementById("toggleButton");
 const pmaCheckbox = document.getElementById("pmaCheckbox");
-const folderSelector = document.getElementById("folderSelector");
+const dirSelector = document.getElementById("dirSelector");
 export const sceneSelector = document.getElementById("sceneSelector");
 export const animationSelector = document.getElementById("animationSelector");
 const settingSelector = document.getElementById("settingSelector");
@@ -60,7 +57,7 @@ export function resetValues() {
   setting = "attachments";
   settingSelector.value = "attachments";
   settingSelector.disabled = false;
-  filterBox.value = "";
+  resetSkinFlags();
 }
 
 export function setupEventListeners() {
@@ -73,10 +70,10 @@ export function setupEventListeners() {
   canvas.addEventListener("wheel", handleWheel);
   toggleButton.addEventListener("click", toggleSidebar);
   pmaCheckbox.addEventListener("change", handlePMACheckboxChange);
-  folderSelector.addEventListener("change", handleFolderChange);
+  dirSelector.addEventListener("change", handleDirChange);
   sceneSelector.addEventListener("change", handleSceneChange);
   animationSelector.addEventListener("change", handleAnimationChange);
-  settingSelector.addEventListener("change", handlesettingChange);
+  settingSelector.addEventListener("change", handleSettingChange);
   filterBox.addEventListener("input", handleFilterInput);
   container.addEventListener("input", handleCheckboxChange);
 }
@@ -134,14 +131,14 @@ function handleMouseDown(e) {
   startX = e.clientX;
   startY = e.clientY;
   mouseDown = true;
-  isMove = e.clientX < canvas.width - 250 && e.clientX > 250;
+  isMove = e.clientX < canvas.width - sidebarWidth && e.clientX > sidebarWidth;
 }
 
 function updateCursorStyle(e) {
   document.body.style.cursor = "default";
-  if (e.clientX >= canvas.width - 250)
+  if (e.clientX >= canvas.width - sidebarWidth)
     document.body.style.cursor = `url("../cursors/rotate_right.svg"), auto`;
-  else if (e.clientX <= 250)
+  else if (e.clientX <= sidebarWidth)
     document.body.style.cursor = `url("../cursors/rotate_left.svg"), auto`;
 }
 
@@ -155,7 +152,7 @@ function handleMouseMove(e) {
     rotate +=
       (e.clientY - startY) *
       rotateStep *
-      (e.clientX >= canvas.width - 250 ? 1 : -1);
+      (e.clientX >= canvas.width - sidebarWidth ? 1 : -1);
   }
   startX = e.clientX;
   startY = e.clientY;
@@ -188,13 +185,31 @@ function handlePMACheckboxChange() {
   loadFiles();
 }
 
-function handleFolderChange(e) {
-  setFolder(e.target.value);
-  setSceneIds(folders[folder]);
-  setBinaryflag(isBinaries[folder]);
-  sceneIndex = 0;
-  dispose();
+function findMaxNumberInString(inputString) {
+  const numbers = inputString.match(/\d+/g);
+  if (numbers === null) {
+    return null;
+  }
+  const numArray = numbers.map(Number);
+  const maxNumber = Math.max(...numArray);
+  return maxNumber;
+}
+
+function setSceneIndex() {
+  const maxNumber = findMaxNumberInString(sceneSelector.value);
   createSceneSelector(sceneIds);
+  let index = sceneIds.findIndex((item) => item.includes(maxNumber));
+  index = index === -1 ? 0 : index;
+  sceneIndex = index;
+  sceneSelector.selectedIndex = index;
+  sceneSelector.focus();
+}
+
+function handleDirChange(e) {
+  setDir(e.target.value);
+  setSceneIds(dirFiles[dir]);
+  dispose();
+  setSceneIndex();
   init();
 }
 
@@ -253,14 +268,14 @@ export function restoreSkins() {
   });
 }
 
-function handlesettingChange(e) {
+function handleSettingChange(e) {
   setting = e.target.value;
   restoreAttachments();
   switchUI();
 }
 
-function handleFilterInput(e) {
-  const filterValue = e.target.value.toLowerCase();
+export function handleFilterInput() {
+  const filterValue = filterBox.value.toLowerCase();
   container.querySelectorAll(".item").forEach((item) => {
     const title = item
       .querySelector("label")

@@ -41,7 +41,14 @@ If images are displayed in a fragmented manner, execute the following command. N
 python resize.py
 ```
 
-If parts of the images appear white where they overlap, execute the following command. All ".png" files in the **assets** folder will be overwritten, so it is recommended to back them up.
+If a display bug like the one at the link occurs, please place the affected image into the **convert** folder and execute the following. Note that the target images will be overwritten, so it is recommended to back them up.
+[Premultiplied Alpha Guide - Spine Forum](https://es.esotericsoftware.com/forum/d/3132-premultiplied-alpha-guide/2)
+
+```sh
+python pma2sta.py
+```
+
+or
 
 ```sh
 python sta2pma.py

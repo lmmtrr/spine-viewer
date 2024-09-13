@@ -1,13 +1,18 @@
-import { resetAttachmentFlags, resetSkinFlags, setting } from "./events.js";
+import {
+  handleFilterInput,
+  resetAttachmentFlags,
+  resetSkinFlags,
+  setting,
+} from "./events.js";
 import { skeletons } from "./main.js";
 
-export function createFolderSelector(folders) {
-  const folderSelector = document.getElementById("folderSelector");
-  Object.keys(folders).forEach((folder) => {
+export function createDirSelector(dirFiles) {
+  const dirSelector = document.getElementById("dirSelector");
+  Object.keys(dirFiles).forEach((dir) => {
     let optionElement = document.createElement("option");
-    optionElement.value = folder;
-    optionElement.textContent = folder;
-    folderSelector.appendChild(optionElement);
+    optionElement.value = dir;
+    optionElement.textContent = dir;
+    dirSelector.appendChild(optionElement);
   });
 }
 
@@ -57,7 +62,6 @@ function createAttachmentUI() {
 
 function createSkinUI() {
   const skins = skeletons["0"].skeleton.data.skins;
-  resetSkinFlags();
   if (skins.length === 1)
     document.getElementById("settingSelector").disabled = true;
   else {
@@ -85,6 +89,7 @@ export function resetUI() {
   document.getElementById("skin").innerHTML = "";
   createAttachmentUI();
   createSkinUI();
+  handleFilterInput();
 }
 
 export function switchUI() {

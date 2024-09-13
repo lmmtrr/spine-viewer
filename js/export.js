@@ -8,7 +8,7 @@ import { animationState } from "./main.js";
 // ref. https://github.com/Nikke-db/nikke-db-vue/blob/main/src/components/common/Spine/Loader.vue#L297
 const RECORDING_MIME_TYPE = "video/webm;codecs=vp8";
 const RECORDING_BITRATE = 12000000;
-const RECORDING_FRAME_RATE = 30;
+const RECORDING_FRAME_RATE = 60;
 const RECORDING_TIME_SLICE = 10;
 const ANIMATION_TIME_EPSILON = 0.02;
 

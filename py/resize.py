@@ -34,7 +34,7 @@ def compare_and_resize_images_in_directory(directory):
                         img = Image.open(img_path)
                         img_width, img_height = img.size
                         if img_width != width or img_height != height:
-                            img = img.resize((width, height), Image.LANCZOS)
+                            img = img.resize((width, height), Image.NEAREST)
                             img.save(img_path)
                             print(f"Resized {filename} to {width}x{height} in {root}")
 

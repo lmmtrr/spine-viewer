@@ -4,7 +4,7 @@ import {
   setFirstRenderFlag,
   setupEventListeners,
 } from "./events.js";
-import { sceneIds, folder, folders, isBinary, spineVersion } from "./setup.js";
+import { sceneIds, dir, dirFiles, spineVersion } from "./setup.js";
 import {
   moveX,
   moveY,
@@ -18,7 +18,7 @@ import {
 import {
   createAnimationSelector,
   createSceneSelector,
-  createFolderSelector,
+  createDirSelector,
   resetUI,
 } from "./ui.js";
 
@@ -31,8 +31,8 @@ let assetManager;
 let mvp;
 let lastFrameTime;
 let requestId;
-let folder2;
-let fileName2;
+let dir2;
+let fileName;
 const isSpineVersionAbove3 = Number(spineVersion.charAt(0)) > 3;
 export let animationState;
 export let skeletons = {};
@@ -42,7 +42,7 @@ script.src = `lib/spine-webgl-${spineVersion}.js`;
 script.onload = () => {
   mvp = isSpineVersionAbove3 ? new spine.Matrix4() : new spine.webgl.Matrix4();
   setupEventListeners();
-  createFolderSelector(folders);
+  createDirSelector(dirFiles);
   createSceneSelector(sceneIds);
   init();
 };
@@ -50,7 +50,7 @@ document.body.appendChild(script);
 
 function setAnimationAndSkin(skeleton) {
   const animationSelector = document.getElementById("animationSelector");
-  switch (folder) {
+  switch (dir) {
     case "characters":
       animationState.setAnimation(0, "animation1", true);
       animationSelector.value = "animation1";
@@ -64,10 +64,10 @@ function setAnimationAndSkin(skeleton) {
 }
 
 export function init() {
-  [folder2, fileName2] = sceneIds[sceneIndex].split(/\\(?!.*\\)/);
-  if (!fileName2) {
-    fileName2 = folder2;
-    folder2 = "";
+  [dir2, fileName] = sceneIds[sceneIndex].split(/\\(?!.*\\)/);
+  if (!fileName) {
+    fileName = dir2;
+    dir2 = "";
   }
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -76,10 +76,7 @@ export function init() {
     shader = spine.Shader.newTwoColoredTextured(ctx);
     batcher = new spine.PolygonBatcher(ctx);
     skeletonRenderer = new spine.SkeletonRenderer(ctx);
-    assetManager = new spine.AssetManager(
-      ctx.gl,
-      `assets/${folder}/${folder2}/`
-    );
+    assetManager = new spine.AssetManager(ctx.gl, `assets/${dir}/${dir2}/`);
   } else {
     ctx = new spine.webgl.ManagedWebGLRenderingContext(canvas);
     shader = spine.webgl.Shader.newTwoColoredTextured(ctx);
@@ -87,18 +84,17 @@ export function init() {
     skeletonRenderer = new spine.webgl.SkeletonRenderer(ctx);
     assetManager = new spine.webgl.AssetManager(
       ctx.gl,
-      `assets/${folder}/${folder2}/`
+      `assets/${dir}/${dir2}/`
     );
   }
   loadFiles();
 }
 
 export function loadFiles() {
-  if (isBinary) {
-    assetManager.loadBinary(fileName2 + ".skel");
-  } else {
-    assetManager.loadText(fileName2 + ".json");
-  }
+  const [fileName2, ext] = fileName.split(".");
+  ext === "skel"
+    ? assetManager.loadBinary(fileName)
+    : assetManager.loadText(fileName);
   assetManager.loadTextureAtlas(fileName2 + ".atlas");
   requestAnimationFrame(load);
 }
@@ -121,12 +117,13 @@ function calculateSetupPoseBounds(skeleton) {
 }
 
 function loadSkeleton(premultipliedAlpha) {
+  const [fileName2, ext] = fileName.split(".");
   const atlas = assetManager.get(fileName2 + ".atlas");
   const atlasLoader = new spine.AtlasAttachmentLoader(atlas);
-  const skeletonLoader = isBinary
-    ? new spine.SkeletonBinary(atlasLoader)
-    : new spine.SkeletonJson(atlasLoader);
-  const fileName = isBinary ? fileName2 + ".skel" : fileName2 + ".json";
+  const skeletonLoader =
+    ext === "skel"
+      ? new spine.SkeletonBinary(atlasLoader)
+      : new spine.SkeletonJson(atlasLoader);
   const skeletonData = skeletonLoader.readSkeletonData(
     assetManager.get(fileName)
   );
